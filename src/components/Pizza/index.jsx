@@ -51,6 +51,8 @@ const Pizza = (props) => {
             </svg>
             <button>Добавить</button>
             <i>{addPizza}</i>
+
+          
           </div>
         </div>
       </div>
