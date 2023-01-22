@@ -10,7 +10,6 @@ const Pizza = ({id,title,price,imageUrl,sizes,types,rating}) => {
   const typeNames = ["тонкое", "традиционное"];
   const [choose, setChoose] = useState(0);
   const [size, setSize] = useState(0);
-  console.log(sizes);
   const addedCount = cartItem ? cartItem.count : 0
   const onAddClick =()=>{
    
