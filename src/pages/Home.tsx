@@ -1,59 +1,61 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import Pizza from "../components/Pizza";
 import Skeleton from "../components/Pizza/Skeleton";
 import Categories from "../components/Categories";
 import Sort, { listItems } from "../components/Sort";
 import Pagination from "../components/Pagination";
-import { useContext } from "react";
-import { SearchContext } from "../App";
 import { useDispatch, useSelector } from "react-redux";
-import { setCategoryId, setPageCount, setFilters } from "../redux/slices/filterSlices";
+import { setCategoryId, setPageCount, setFilters, Filters } from "../redux/slices/filterSlices";
 import qs from 'qs'
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useRef } from "react";
 import { fetchPizzas } from "../redux/slices/PizzaSlice";
+import { useAppDispatch } from "../redux/store";
 
 
-
-const Home = () => {
-  const categoryId = useSelector((state) => state.filter.categoryId)
-  const sortProperty = useSelector((state) => state.filter.sort.sortProperty)
-  const pageCount = useSelector((state) => state.filter.pageCount)
-  const dispatch = useDispatch()
+const Home:React.FC= () => {
+  const categoryId = useSelector((state:any) => state.filter.categoryId)
+  const sortProperty = useSelector((state:any) => state.filter.sort.sortProperty)
+  const pageCount = useSelector((state:any) => state.filter.pageCount)
+  const searchValue = useSelector((state:any)=>state.filter.searchValue)
+  const dispatch = useAppDispatch()
   const navigate = useNavigate()
+  const location = useLocation()
   const isSearch = useRef(false)
   const isMounted = useRef(false)
-  const { searchValue } = useContext(SearchContext)
-  const { status, pizzas } = useSelector((state)=>state.pizza)
+  const { status, pizzas } = useSelector((state:any)=>state.pizza)
   
-
-  const onChangeCategory = (id) => {
+  
+  const onChangeCategory = (id:number) => {
     dispatch(setCategoryId(id))
   }
-
-  const onChangePage = number => {
+  
+  const onChangePage = (number:number) => {
     dispatch(setPageCount(number))
   }
-
+  
   const getPizzas = async () => {
     const sortBy = sortProperty.replace('-', '')
     const order = sortProperty.includes('-') ? 'asc' : 'desc'
     const category = categoryId > 0 ? `category=${categoryId}` : ""
     const search = searchValue ? `&search=${searchValue}` : ''
     
+    console.log(search);
 
-  dispatch(fetchPizzas({
+  dispatch(
+    fetchPizzas({
     sortBy,
     order,
     category,
     search,
     pageCount
-  })) 
+  }),) 
   }
 
   useEffect(() => {
     if (!isSearch.current) {
       getPizzas()
+      
      }
     isSearch.current = false
 
@@ -62,28 +64,30 @@ const Home = () => {
 
   useEffect(() => {
     if (window.location.search) {
-      const params = qs.parse(window.location.search.substring(1))
+      const params = qs.parse(window.location.search.substring(1)) as unknown as Partial<Record<Exclude<keyof Filters, 'sort'> | 'sortProperty', string>>
       const sort = listItems.find(obj => obj.sortProperty === params.sortProperty)
+      const categoryId = params.categoryId ? Number.isNaN(parseInt(params.categoryId)) ? undefined : parseInt(params.categoryId) : undefined
+      const pageCount = params.pageCount ? Number.isNaN(parseInt(params.pageCount)) ? undefined : parseInt(params.pageCount) : undefined
       dispatch(setFilters({
-        ...params,
-        sort
+        sort,
+        categoryId,
+        searchValue: params.searchValue,
+        pageCount
       }))
       isSearch.current = true
     }
-  }, [dispatch])
+  }, [])
 
   useEffect(() => {
-    if(isMounted.current){
-      const queryString = qs.stringify({
-        categoryId, sortProperty, pageCount
-      })
+    console.log('test')
+    const queryString = qs.stringify({
+      categoryId, pageCount, searchValue, sortProperty
+    })
 
-      navigate(`?${queryString}`)
-    }
-    isMounted.current =true
-  }, [categoryId, sortProperty, pageCount])
+    navigate(`?${queryString}`)
+  }, [categoryId, pageCount, searchValue, sortProperty])
 
-  const items = pizzas.map((item) => <Pizza key={item.id} {...item} />)
+  const items = pizzas.map((item:any) =><Pizza key={item.id} {...item} /> )
   const sceletons = [...new Array(6)].map((_, index) => <Skeleton key={index} />)
   return (
     <div className="container">

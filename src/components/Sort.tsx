@@ -15,7 +15,7 @@ export  const listItems = [
  ];
 const Sort = () => {
   const dispatch = useDispatch()
-  const sort = useSelector()
+  const sort = useSelector((state)=> state.filter.sort)
   const [openedList, setOpenedist] = useState(false);
   const sortRef = useRef()
   const onSetItem = (obj) => {
